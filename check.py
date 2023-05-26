@@ -19,4 +19,8 @@ img1 = cv2.imread('img/lung1.jpeg', 0)
 img2 = cv2.imread('img/lung1 copy.jpeg', 0) 
 
 orb_similarity = orb_sim(img1, img2)  
-print("Similarity using ORB is: ", orb_similarity)
+if(orb_similarity==1):
+    print("This image is already present cannot create duplicate, here is the image:", img1)
+else:
+  print("Image accepted into Storage")
+
