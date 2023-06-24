@@ -74,7 +74,10 @@ def confusionmatrix(hashfunc):
     print('true_negative', true_negative)
     print('false_positive', false_positive)
     print('false_negative', false_negative)
-
+    error=(false_positive+false_negative)/(true_positive+true_negative+false_positive+false_negative)
+    accuracy=(true_positive+true_negative)/(true_positive+true_negative+false_positive+false_negative)
+    print('error', error*100,"%")
+    print('accuracy', accuracy*100,"%")
 
 
 confusionmatrix(imagehash.phash)
