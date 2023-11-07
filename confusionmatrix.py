@@ -1,9 +1,13 @@
 import os
 from PIL import Image
 import imagehash
-
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+from mlxtend.plotting import plot_confusion_matrix
 
 image_directory = "./images_dataset"
+
 
 phash_times = []
 whash_times = []
@@ -40,16 +44,34 @@ duplicate_copy_counter = 0
 #         if list(image_hash_map.values()).count(hash_value) > 1:
 #             if 'Copy' in image_name:
 #                 duplicate_copy_counter += 1
+def plot_confusion(hash,title):
+        categories=[["True Positive","True Negative"],["False Positive","False Negative"]]
+        fig, ax = plt.subplots()
+        cax = ax.matshow(hash,cmap='cividis')  
 
+        for i in range(hash.shape[0]):
+            for j in range(hash.shape[1]):
+                ax.text(j, i, f'{categories[i][j]}\n{hash[i, j]:.2f}%', ha='center', va='center', color='black')
+
+        plt.xlabel('False')
+        plt.ylabel('True')
+        plt.title(title)
+
+        plt.show()
 
 
 def confusionmatrix(hashfunc):
-    true_positive=0
-    true_negative=0
-    false_positive=0
-    false_negative=0
+    num_images = 0
+    true_positive = 0
+    true_negative = 0
+    false_positive = 0
+    false_negative = 0
+    
+    confusion_matrix = np.zeros((2, 2))  # Initialize the confusion matrix
+    
     for filename in os.listdir(image_directory):
-         if filename.endswith(".jpg") or filename.endswith(".png"):
+        num_images += 1
+        if filename.endswith(".jpeg") or filename.endswith(".png"):
             image_path = os.path.join(image_directory, filename)
             image = Image.open(image_path)
             hash_value = str(hashfunc(image))
@@ -68,22 +90,30 @@ def confusionmatrix(hashfunc):
         if list(image_hash_map.values()).count(hash_value) == 1:
             if 'Copy' not in image_name:
                 true_positive += 1
-
+    
+    # Update the confusion matrix with calculated values
+    confusion_matrix[0, 0] = true_positive / num_images * 100
+    confusion_matrix[0, 1] = true_negative / num_images * 100
+    confusion_matrix[1, 0] = false_positive / num_images * 100
+    confusion_matrix[1, 1] = false_negative / num_images * 100
+    
+    error = (false_positive + false_negative) / num_images
+    accuracy = (true_positive + true_negative) / num_images
     print('For', str(hashfunc)[9:16])
-    print('true_positive', true_positive)
-    print('true_negative', true_negative)
-    print('false_positive', false_positive)
-    print('false_negative', false_negative)
-    error=(false_positive+false_negative)/(true_positive+true_negative+false_positive+false_negative)
-    accuracy=(true_positive+true_negative)/(true_positive+true_negative+false_positive+false_negative)
-    print('error', error*100,"%")
-    print('accuracy', accuracy*100,"%")
+    print('true_positive %', (true_positive / num_images) * 100)
+    print('true_negative %', (true_negative / num_images) * 100)
+    print('false_positive %', (false_positive / num_images) * 100)
+    print('false_negative %', (false_negative / num_images) * 100)
+    print('error', error * 100, "%")
+    print('accuracy', accuracy * 100, "%")
+    plot_confusion(confusion_matrix,str(hashfunc)[9:16])
 
 
 confusionmatrix(imagehash.phash)
 confusionmatrix(imagehash.whash)
 confusionmatrix(imagehash.average_hash)
 confusionmatrix(imagehash.dhash)
+
 # print(image_hash_map)
 
                    
